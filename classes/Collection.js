@@ -11,7 +11,7 @@ module.exports = class Collection {
         this.documents = {};
         this.load();
     }
-
+    
     load() {
         try {
             this.documents = JSON.parse(fs.readFileSync(this.fpath, 'utf8'));
@@ -39,11 +39,31 @@ module.exports = class Collection {
         }
     }
 
-    get(id) {
+    findById(id) {
         return this.documents[id];
     }
 
     sync() {
         fs.writeFileSync(this.fpath, JSON.stringify(Object.values(this.documents), null, 0));
+    }
+
+    insert(docs) {
+        switch (typeof docs) {
+            case 'object':
+                if (Array.isArray(docs)) {
+                    for (let i = 0; i < docs.length; i++) {
+                        const doc = docs[i];
+                        this.insert(doc);
+                    }
+                } else {
+                    const doc = new Document(docs);
+                    delete doc.autosetid;
+                    this.documents[doc._id] = doc;
+                }
+                break;
+            default:
+                console.log('Only Object or Array is valid for insert to collection');
+                break;
+        }
     }
 }

@@ -8,6 +8,7 @@ module.exports = class Document {
         if (!this.data._id) {
             this.data._id = crypto.randomBytes(16).toString('hex');
             this.data.autosetid = true;
+            this.data.iat = Date.now();
         }
         return this.data;
     }
