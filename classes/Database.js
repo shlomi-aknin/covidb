@@ -35,7 +35,12 @@ module.exports = class Database {
         try {
             this.files = fs.readdirSync(this.dir, 'utf8');
         } catch (error) {
-            throw Error(`Can't read ${this.dir}`);
+            try {
+                fs.mkdirSync(this.dir);
+                this.readDir();
+            } catch (error) {
+                throw Error(error);
+            }
         }
     }
 
