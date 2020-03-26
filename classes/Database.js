@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const Collection = require('./Collection');
+const appDir = path.dirname(require.main.filename);
 
 module.exports = class Database {
     constructor(opts = {}) {
-        this.dir = opts.dir || path.resolve('db');
+        this.dir = path.resolve(appDir, opts.dir || 'db');
         this.files = [];
         this.collections = {};
         this.readDir();
