@@ -4,10 +4,11 @@ const crypto = require('crypto');
 
 module.exports = class Document {
     constructor(data = {}) {
-        if (!data._id) {
-            data._id = crypto.randomBytes(16).toString('hex');
-            data.autosetid = true;
+        this.data = data;
+        if (!this.data._id) {
+            this.data._id = crypto.randomBytes(16).toString('hex');
+            this.data.autosetid = true;
         }
-        return data;
+        return this.data;
     }
 }

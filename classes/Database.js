@@ -6,11 +6,31 @@ module.exports = class Database {
     constructor(opts = {}) {
         this.dir = opts.dir || path.resolve('db');
         this.files = [];
+        this.collections = {};
         this.readDir();
         this.loadCollections();
-        return this;
-    }
+        return new Proxy(this, {
+            get(target, property) {
+                const prop = target[property];
+                if (typeof prop === 'function') {
+                    return function (...args) {
+                        prop.apply(this, args);
+                    };
+                } else {
+                    if (target.collections[property]) {
+                        return target.collections[property];
+                    } else {
+                        target.collections[property] = new Collection(property, property, target.dir);
+                        return target.collections[property];
+                    }
+                }
+            },
+            set(obj, prop, value) {
 
+            },
+        });
+    }
+    
     readDir() {
         try {
             this.files = fs.readdirSync(this.dir, 'utf8');
@@ -24,7 +44,7 @@ module.exports = class Database {
             const file = this.files[i];
             const name = file.substr(0, file.lastIndexOf('.'));
             const collection = new Collection(file, name, this.dir);
-            this[name] = collection;
+            this.collections[name] = collection;
         }
     }
 }
