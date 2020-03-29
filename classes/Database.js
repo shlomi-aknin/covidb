@@ -29,7 +29,7 @@ module.exports = class Database {
                     }
                 }
             },
-            set(obj, prop, value) {
+            set(target, property, value) {
 
             },
         });

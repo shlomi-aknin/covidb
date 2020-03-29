@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
 
 module.exports = class Document {
@@ -10,6 +8,26 @@ module.exports = class Document {
             this.data.autosetid = true;
             this.data.iat = Date.now();
         }
-        return this.data;
+        return new Proxy(this, {
+            get(target, property) {
+                const prop = target[property];
+                if (typeof prop === 'function') {
+                    return function (...args) {
+                        prop.apply(this, args);
+                    };
+                } else {
+                    if (property === 'data') {
+                        return undefined;
+                    }
+                    return target.data[property] || undefined;
+                }
+            },
+            set(target, property, value) {
+                const forbidden = ['data', '_id', 'iat'];
+                if (!forbidden.includes(property)) {
+                    target.data[property] = value;
+                }
+            },
+        });
     }
 }
