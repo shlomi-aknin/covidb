@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Collection = require('./Collection');
 const appDir = path.dirname(require.main.filename);
+let self;
 
 module.exports = class Database {
     constructor(opts = {}) {
@@ -10,6 +11,8 @@ module.exports = class Database {
         this.collections = {};
         this.readDir();
         this.loadCollections();
+        self = this;
+        self.intervalId = setInterval(() => self.sync(), opts.interval || 60000);
         return new Proxy(this, {
             get(target, property) {
                 const prop = target[property];
@@ -52,5 +55,16 @@ module.exports = class Database {
             const collection = new Collection(file, name, this.dir);
             this.collections[name] = collection;
         }
+    }
+
+    sync() {
+        const collections = Object.values(self.collections);
+        for (let i = 0; i < collections.length; i++) {
+            collections[i].sync();
+        }
+    }
+
+    stop() {
+        clearInterval(self.intervalId);
     }
 }

@@ -4,6 +4,7 @@ const Document = require('./Document');
 
 module.exports = class Collection {
     constructor(file, name, dir) {
+        this.hasChanges = false;
         this.file = file.indexOf('.json') === -1 ? `${file}.json` : file;
         this.name = name;
         this.dir = dir;
@@ -35,6 +36,7 @@ module.exports = class Collection {
         this.documents = tmp;
         tmp = {};
         if (modCount) {
+            this.hasChanges = true;
             this.sync();
         }
     }
@@ -44,7 +46,10 @@ module.exports = class Collection {
     }
 
     sync() {
-        fs.writeFileSync(this.fpath, JSON.stringify(Object.values(this.documents), null, 0));
+        if (this.hasChanges) {
+            fs.writeFileSync(this.fpath, JSON.stringify(Object.values(this.documents), null, 0));
+            this.hasChanges = false;
+        }
     }
 
     insert(docs) {
@@ -59,6 +64,9 @@ module.exports = class Collection {
                     const doc = new Document(docs);
                     delete doc.autosetid;
                     this.documents[doc._id] = doc;
+                    if (!this.hasChanges) {
+                        this.hasChanges = true;
+                    }
                 }
                 break;
             default:
