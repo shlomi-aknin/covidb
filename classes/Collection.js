@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Document = require('./Document');
+const crypto = require('crypto');
 const Util = require('./Util');
 
 module.exports = class Collection {
@@ -26,12 +26,13 @@ module.exports = class Collection {
         let modCount = 0;
         let tmp = {};
         for (let i = 0; i < this.documents.length; i++) {
-            const document = new Document(this.documents[i]);
-            tmp[document._id] = document;
-            if (document.autoid) {
+            const document = this.documents[i];
+            if (!document._id) {
+                document._id = crypto.randomBytes(16).toString('hex');
+                document.iat = Date.now();
                 modCount++;
-                delete document.autoid;
             }
+            tmp[document._id] = document;
         }
         this.documents = tmp;
         tmp = {};
@@ -52,6 +53,15 @@ module.exports = class Collection {
         }
     }
 
+    initDoc(doc = {}) {
+        if (!doc._id) {
+            doc._id = crypto.randomBytes(16).toString('hex');
+            doc.iat = Date.now();
+        }
+
+        return doc;
+    }
+
     insert(docs) {
         switch (typeof docs) {
             case 'object':
@@ -61,8 +71,7 @@ module.exports = class Collection {
                         this.insert(doc);
                     }
                 } else {
-                    const doc = new Document(docs);
-                    delete doc.autoid;
+                    const doc = this.initDoc(docs);
                     this.documents[doc._id] = doc;
                     if (!this.hasChanges) {
                         this.hasChanges = true;
@@ -82,7 +91,7 @@ module.exports = class Collection {
             return documents;
         }
         docsLoop: for (let i = 0; i < documents.length; i++) {
-            const document = documents[i].data;
+            const document = documents[i];
             const keys = Object.keys(search);
             keysLoop: for (let j = 0; j < keys.length; j++) {
                 const key = keys[j];
