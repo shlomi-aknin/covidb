@@ -23,23 +23,21 @@ module.exports = class Collection {
     }
 
     map() {
-        let modCount = 0;
         let tmp = {};
         for (let i = 0; i < this.documents.length; i++) {
             const document = this.documents[i];
             if (!document._id) {
                 document._id = crypto.randomBytes(16).toString('hex');
                 document.iat = Date.now();
-                modCount++;
+                if (!this.hasChanges) {
+                    this.hasChanges = true;
+                }
             }
             tmp[document._id] = document;
         }
         this.documents = tmp;
         tmp = {};
-        if (modCount) {
-            this.hasChanges = true;
-            this.sync();
-        }
+        this.sync();
     }
 
     findById(id) {
