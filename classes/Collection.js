@@ -46,7 +46,7 @@ module.exports = class Collection {
 
     sync() {
         if (this.hasChanges) {
-            fs.writeFileSync(this.fpath, JSON.stringify(Object.values(this.documents), null, 0));
+            fs.writeFileSync(this.fpath, this.getDocs(true));
             this.hasChanges = false;
         }
     }
@@ -60,8 +60,13 @@ module.exports = class Collection {
         return doc;
     }
 
+    getDocs(str = false) {
+        const docs = Object.values(this.documents);
+        return str ? JSON.stringify(docs, null, 0) : docs;
+    }
+
     insert(docs) {
-        switch (typeof docs) {
+        switch (typeof(docs)) {
             case 'object':
                 if (Array.isArray(docs)) {
                     for (let i = 0; i < docs.length; i++) {
@@ -84,7 +89,7 @@ module.exports = class Collection {
 
     find(search) {
         let matches = [];
-        const documents = Object.values(this.documents);
+        const documents = this.getDocs();
         if (!search || !Util.isObject(search) || !Object.keys(search).length) {
             return documents;
         }
@@ -93,18 +98,18 @@ module.exports = class Collection {
             const keys = Object.keys(search);
             keysLoop: for (let j = 0; j < keys.length; j++) {
                 const key = keys[j];
-                if (Object.keys(document).indexOf(key) === -1) {
-                    continue docsLoop;
-                }
+                const isOperator = Util.isOperator(key);
                 const searchValue = search[key];
                 const docValue = document[key];
-                if (Util.isObject(searchValue)) {
-                    
-                } else {
+                if (isOperator) {
                     if (Array.isArray(searchValue)) {
-                        if (!Array.isArray(docValue) || !Util.equalArrays(docValue, searchValue)) {
-                            continue docsLoop;
-                        }
+                        
+                    } else {
+
+                    }
+                } else {
+                    if (Object.keys(document).indexOf(key) === -1) {
+                        continue docsLoop;
                     } else {
                         if (docValue !== searchValue) {
                             continue docsLoop;

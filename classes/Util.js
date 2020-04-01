@@ -27,6 +27,10 @@ module.exports = class Util {
     }
 
     static isObject(obj) {
-        return typeof obj === 'object' && !Array.isArray(obj);
+        return typeof(obj) === 'object' && !Array.isArray(obj);
+    }
+
+    static isOperator(key) {
+        return key.substr(0, 1) === '$';
     }
 }

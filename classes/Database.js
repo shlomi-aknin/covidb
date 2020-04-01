@@ -12,11 +12,13 @@ module.exports = class Database {
         this.readDir();
         this.loadCollections();
         self = this;
-        self.intervalId = setInterval(() => self.sync(), opts.interval || 60000);
+        if (opts.autosave) {
+            self.intervalId = setInterval(() => self.sync(), opts.interval || 60000);
+        }
         return new Proxy(this, {
             get(target, property) {
                 const prop = target[property];
-                if (typeof prop === 'function') {
+                if (typeof(prop) === 'function') {
                     return function (...args) {
                         prop.apply(this, args);
                     };
@@ -65,6 +67,8 @@ module.exports = class Database {
     }
 
     stop() {
-        clearInterval(self.intervalId);
+        if (self.intervalId) {
+            clearInterval(self.intervalId);
+        }
     }
 }
