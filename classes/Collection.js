@@ -88,12 +88,15 @@ module.exports = class Collection {
         }
     }
 
-    find(search) {
+    find(search, opts = {}) {
         const documents = this.getDocs();
         if (!search || !Util.isObject(search) || !Object.keys(search).length) {
             return documents;
         }
         const cursor = mingo.find(documents, search);
+        // while (cursor.hasNext()) {
+        //     console.log(cursor.next());
+        // }
         return cursor.all();
     }
 }
