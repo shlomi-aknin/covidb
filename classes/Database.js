@@ -41,9 +41,7 @@ module.exports = class Database {
     
     readDir() {
         try {
-            console.time('readDir');
             this.files = fs.readdirSync(this.dir, 'utf8');
-            console.timeEnd('readDir');
         } catch (error) {
             try {
                 fs.mkdirSync(this.dir);
