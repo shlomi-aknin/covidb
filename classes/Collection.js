@@ -1,6 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const Util = require('./Util');
+const mingo = require('mingo');
 
 module.exports = class Collection {
     constructor(file, name, dir) {
@@ -88,38 +89,11 @@ module.exports = class Collection {
     }
 
     find(search) {
-        let matches = [];
         const documents = this.getDocs();
         if (!search || !Util.isObject(search) || !Object.keys(search).length) {
             return documents;
         }
-        docsLoop: for (let i = 0; i < documents.length; i++) {
-            const document = documents[i];
-            const keys = Object.keys(search);
-            keysLoop: for (let j = 0; j < keys.length; j++) {
-                const key = keys[j];
-                const isOperator = Util.isOperator(key);
-                const searchValue = search[key];
-                const docValue = document[key];
-                if (isOperator) {
-                    if (Array.isArray(searchValue)) {
-                        
-                    } else {
-
-                    }
-                } else {
-                    if (Object.keys(document).indexOf(key) === -1) {
-                        continue docsLoop;
-                    } else {
-                        if (docValue !== searchValue) {
-                            continue docsLoop;
-                        }
-                    }
-                }
-            }
-            matches.push(document);
-        }
-
-        return matches;
+        const cursor = mingo.find(documents, search);
+        return cursor.all();
     }
 }
