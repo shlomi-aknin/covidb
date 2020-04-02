@@ -9,11 +9,13 @@ module.exports = class Database {
         this.dir = path.resolve(appDir, opts.dir || 'db');
         this.files = [];
         this.collections = {};
-        this.readDir();
-        this.loadCollections();
+        this.scan();
         self = this;
         if (opts.autosave) {
-            self.intervalId = setInterval(() => self.sync(), opts.interval || 60000);
+            self.intervalId = setInterval(() => {
+                self.sync();
+                self.scan();
+            }, opts.interval || 60000);
         }
         return new Proxy(this, {
             get(target, property) {
@@ -39,7 +41,9 @@ module.exports = class Database {
     
     readDir() {
         try {
+            console.time('readDir');
             this.files = fs.readdirSync(this.dir, 'utf8');
+            console.timeEnd('readDir');
         } catch (error) {
             try {
                 fs.mkdirSync(this.dir);
@@ -54,8 +58,10 @@ module.exports = class Database {
         for (let i = 0; i < this.files.length; i++) {
             const file = this.files[i];
             const name = file.substr(0, file.lastIndexOf('.'));
-            const collection = new Collection(file, name, this.dir);
-            this.collections[name] = collection;
+            if (!this.collections[name]) {
+                const collection = new Collection(file, name, this.dir);
+                this.collections[name] = collection;
+            }
         }
     }
 
@@ -64,6 +70,11 @@ module.exports = class Database {
         for (let i = 0; i < collections.length; i++) {
             collections[i].sync();
         }
+    }
+
+    scan() {
+        this.readDir();
+        this.loadCollections();
     }
 
     stop() {
