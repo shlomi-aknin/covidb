@@ -45,6 +45,11 @@ module.exports = class Collection {
         return this.documents[id];
     }
 
+    commit() {
+        this.hasChanges = true;
+        this.sync();
+    }
+
     sync() {
         if (this.hasChanges) {
             fs.writeFileSync(this.fpath, this.getDocs(true));
