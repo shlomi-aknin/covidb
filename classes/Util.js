@@ -13,7 +13,7 @@ module.exports = class Util {
                 return false;
             }
         }
-        for (var i = 0; i < subset.length; i++) {
+        for (let i = 0; i < subset.length; i++) {
             if (superset.indexOf(subset[i]) === -1) {
                 return false;
             }

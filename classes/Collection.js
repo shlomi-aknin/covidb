@@ -1,12 +1,14 @@
 const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const Util = require('./Util');
 const mingo = require('mingo');
+const idLength = 16;
 
 module.exports = class Collection {
     constructor(file, name, dir) {
         this.hasChanges = false;
-        this.file = file.indexOf('.json') === -1 ? `${file}.json` : file;
+        this.file = path.extname(file) === '.json' ? file : `${file}.json`;
         this.name = name;
         this.dir = dir;
         this.fpath = `${this.dir}/${this.file}`;
@@ -28,7 +30,7 @@ module.exports = class Collection {
         for (let i = 0; i < this.documents.length; i++) {
             const document = this.documents[i];
             if (!document._id) {
-                document._id = crypto.randomBytes(16).toString('hex');
+                document._id = crypto.randomBytes(idLength).toString('hex');
                 document.iat = Date.now();
                 if (!this.hasChanges) {
                     this.hasChanges = true;
@@ -103,5 +105,32 @@ module.exports = class Collection {
         //     console.log(cursor.next());
         // }
         return cursor.all();
+    }
+
+    delete(docOrID) {
+        const type = typeof(docOrID);
+        if (type === 'string') {
+            if (docOrID.length === idLength) {
+                const doc = this.findById(docOrID);
+                this.deleteDoc(doc);
+            }
+        }
+
+        if (Util.isObject(docOrID)) {
+            const docs = this.find(docOrID);
+            for (let i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                this.deleteDoc(doc);
+            }
+        }
+    }
+
+    deleteDoc(doc) {
+        if (doc) {
+            delete this.documents[doc._id];
+            if (!this.hasChanges) {
+                this.hasChanges = true;
+            }
+        }
     }
 }
