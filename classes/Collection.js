@@ -95,33 +95,40 @@ module.exports = class Collection {
         }
     }
 
-    find(search, opts = {}) {
+    find(search) {
         const documents = this.getDocs();
         if (!search || !Util.isObject(search) || !Object.keys(search).length) {
             return documents;
         }
         const cursor = mingo.find(documents, search);
-        // while (cursor.hasNext()) {
-        //     console.log(cursor.next());
-        // }
+
         return cursor.all();
     }
 
-    delete(docOrID) {
+    get(docOrID) {
         const type = typeof(docOrID);
         if (type === 'string') {
             if (docOrID.length === idLength) {
-                const doc = this.findById(docOrID);
-                this.deleteDoc(doc);
+                return this.findById(docOrID);
             }
         }
 
         if (Util.isObject(docOrID)) {
-            const docs = this.find(docOrID);
+            return this.find(docOrID);
+        }
+    }
+
+    delete(docOrID) {
+        const docs = this.get(docOrID);
+        if (Array.isArray(docs)) {
             for (let i = 0; i < docs.length; i++) {
                 const doc = docs[i];
                 this.deleteDoc(doc);
             }
+        }
+
+        if (Util.isObject(docs)) {
+            this.deleteDoc(docs);
         }
 
         this.sync();
@@ -134,5 +141,9 @@ module.exports = class Collection {
                 this.hasChanges = true;
             }
         }
+    }
+
+    update(docOrID, update = {}) {
+
     }
 }
