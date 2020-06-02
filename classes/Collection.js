@@ -123,6 +123,8 @@ module.exports = class Collection {
                 this.deleteDoc(doc);
             }
         }
+
+        this.sync();
     }
 
     deleteDoc(doc) {
