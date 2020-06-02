@@ -90,9 +90,11 @@ module.exports = class Collection {
                 }
                 break;
             default:
-                console.log('Only Object or Array is valid for insert to collection');
+                // Only Object or Array is valid for insert to collection
                 break;
         }
+        
+        this.sync();
     }
 
     find(search) {
