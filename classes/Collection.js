@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { isObject } = require('./Util');
+const Util = require('./Util');
 const mingo = require('mingo');
 const idLength = 16;
 
@@ -97,7 +97,7 @@ module.exports = class Collection {
 
     find(search) {
         const documents = this.getDocs();
-        if (!search || !isObject(search) || !Object.keys(search).length) {
+        if (!search || !Util.isObject(search) || !Util.hasKeys(search)) {
             return documents;
         }
         const cursor = mingo.find(documents, search);
@@ -113,7 +113,7 @@ module.exports = class Collection {
             }
         }
 
-        if (isObject(docOrID)) {
+        if (Util.isObject(docOrID)) {
             return this.find(docOrID);
         }
 
@@ -131,7 +131,7 @@ module.exports = class Collection {
             }
         }
 
-        if (isObject(docs)) {
+        if (Util.isObject(docs)) {
             this.deleteDoc(docs);
         }
 
@@ -148,7 +148,7 @@ module.exports = class Collection {
     }
 
     update(docOrID, update) {
-        if (!isObject(update) || !Object.keys(update).length) {
+        if (!Util.isObject(update) || !Util.hasKeys(update)) {
             return;
         }
 
@@ -160,7 +160,7 @@ module.exports = class Collection {
             }
         }
 
-        if (isObject(docs)) {
+        if (Util.isObject(docs)) {
             this.updateSingle(docs, update);
         }
 
@@ -168,6 +168,11 @@ module.exports = class Collection {
     }
 
     updateSingle(doc, update) {
+        const unset = update['$unset'] || false;
+        if (unset && Util.isObject(unset)) {
+            doc = Util.deleteObjectProps(doc, unset);
+            delete update['$unset'];
+        }
         Object.assign(doc, update);
         this.documents[doc._id] = doc;
     }

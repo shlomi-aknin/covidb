@@ -33,4 +33,29 @@ module.exports = class Util {
     static isOperator(key) {
         return key.substr(0, 1) === '$';
     }
+
+    static hasKeys(obj) {
+        if (!this.isObject(obj)) {
+            return false;
+        }
+
+        return Object.keys(obj).length ? true : false;
+    }
+
+    static deleteObjectProps(src, propsObj) {
+        if (!this.isObject(src) || !this.hasKeys(propsObj)) {
+            return;
+        }
+
+        const keys = Object.keys(propsObj);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            if (key === '_id' || key === 'iat') {
+                continue;
+            }
+            delete src[key];
+        }
+
+        return src;
+    }
 }
