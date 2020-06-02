@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const Util = require('./Util');
+const { isObject } = require('./Util');
 const mingo = require('mingo');
 const idLength = 16;
 
@@ -97,23 +97,23 @@ module.exports = class Collection {
 
     find(search) {
         const documents = this.getDocs();
-        if (!search || !Util.isObject(search) || !Object.keys(search).length) {
+        if (!search || !isObject(search) || !Object.keys(search).length) {
             return documents;
         }
         const cursor = mingo.find(documents, search);
-
+        
         return cursor.all();
     }
 
     get(docOrID) {
         const type = typeof(docOrID);
         if (type === 'string') {
-            if (docOrID.length === idLength) {
+            if (docOrID.length === idLength * 2) {
                 return this.findById(docOrID);
             }
         }
 
-        if (Util.isObject(docOrID)) {
+        if (isObject(docOrID)) {
             return this.find(docOrID);
         }
 
@@ -131,7 +131,7 @@ module.exports = class Collection {
             }
         }
 
-        if (Util.isObject(docs)) {
+        if (isObject(docs)) {
             this.deleteDoc(docs);
         }
 
@@ -147,7 +147,28 @@ module.exports = class Collection {
         }
     }
 
-    update(docOrID, update = {}) {
+    update(docOrID, update) {
+        if (!isObject(update) || !Object.keys(update).length) {
+            return;
+        }
 
+        const docs = this.get(docOrID);
+        if (Array.isArray(docs)) {
+            for (let i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                this.updateSingle(doc, update);
+            }
+        }
+
+        if (isObject(docs)) {
+            this.updateSingle(docs, update);
+        }
+
+        this.commit();
+    }
+
+    updateSingle(doc, update) {
+        Object.assign(doc, update);
+        this.documents[doc._id] = doc;
     }
 }
