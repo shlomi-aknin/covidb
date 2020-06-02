@@ -116,6 +116,10 @@ module.exports = class Collection {
         if (Util.isObject(docOrID)) {
             return this.find(docOrID);
         }
+
+        if (Array.isArray(docOrID)) {
+            return docOrID;
+        }
     }
 
     delete(docOrID) {
