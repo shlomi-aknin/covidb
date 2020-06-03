@@ -70,7 +70,7 @@ module.exports = class Collection {
 
     getDocs(str = false) {
         const docs = Object.values(this.documents);
-        return str ? JSON.stringify(docs, null, 0) : docs;
+        return str ? JSON.stringify(docs, null, '\t') : docs;
     }
 
     insert(docs) {
